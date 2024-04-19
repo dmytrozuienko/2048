@@ -9,6 +9,6 @@ apt-cache policy docker-ce
 sudo apt install -y docker-ce
 sudo usermod -aG docker ${USER}
 # Getting Docker image
-sudo docker pull itsforajob/2048_httpd:1
+sudo docker pull itsforajob/2048_httpd:2
 # Run the container
-sudo docker run -dp 80:80 itsforajob/2048_httpd:1
+sudo docker run -dp 80:80 itsforajob/2048_httpd:2
