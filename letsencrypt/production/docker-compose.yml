@@ -1,0 +1,21 @@
+version: '3.7'
+services:
+  productive-apache:
+    container_name: 'productive-apache'
+    image: productive-apache:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./httpd.conf:/etc/apache2/httpd.conf
+      - ./html:/var/www/localhost/htdocs/
+      - /docker-volumes/etc/letsencrypt/live/2048.run.place/cert.pem:/etc/letsencrypt/live/2048.run.place/cert.pem
+      - /docker-volumes/etc/letsencrypt/live/2048.run.place/fullchain.pem:/etc/letsencrypt/live/2048.run.place/fullchain.pem
+      - /docker-volumes/etc/letsencrypt/live/2048.run.place/privkey.pem:/etc/letsencrypt/live/2048.run.place/privkey.pem
+    networks:
+      - docker-network
+    environment:
+      - server_name=2048.run.place
+networks:
+  docker-network:
+    driver: bridge
