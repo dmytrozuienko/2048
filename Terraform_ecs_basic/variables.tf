@@ -54,6 +54,6 @@ variable "tsl_certificate_arn" {
   default     = "arn:aws:acm:us-east-1:905418075806:certificate/657f958d-22e4-49cf-913f-3e6838505192"
 }
 
-variable "health_check_path" {
-  description = "Path healthy check"
-}
+#variable "health_check_path" {
+#  description = "Path healthy check"
+#}

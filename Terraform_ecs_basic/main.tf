@@ -171,11 +171,11 @@ resource "aws_ecs_cluster" "fargate-cluster" {
 
 
 resource "aws_ecs_task_definition" "task-definition" {
-    family = "service"
+    family = "app2048"
     network_mode             = "awsvpc"
     requires_compatibilities = ["FARGATE"]
-    cpu         = 256
-    memory      = 512
+    cpu         = 512
+    memory      = 1024
     execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
     task_role_arn            = aws_iam_role.ecs_task_role.arn
     container_definitions = jsonencode([{
@@ -243,7 +243,7 @@ resource "aws_ecs_service" "ecs-service" {
     name                               = "${var.name}_${var.environment}"
     cluster                            = aws_ecs_cluster.fargate-cluster.id
     task_definition                    = aws_ecs_task_definition.task-definition.arn
-    desired_count                      = 2
+    desired_count                      = 1
     deployment_minimum_healthy_percent = 50
     deployment_maximum_percent         = 200
     launch_type                        = "FARGATE"
@@ -291,7 +291,7 @@ resource "aws_alb_target_group" "alb-target-group" {
         protocol            = "HTTP"
         matcher             = "200"
         timeout             = "3"
-        path                = var.health_check_path
+#        path                = var.health_check_path
         unhealthy_threshold = "2"
     }
 }
@@ -302,31 +302,36 @@ resource "aws_alb_listener" "alb-http-listener" {
     port              = 80
     protocol          = "HTTP"
  
-    default_action {
-        type = "redirect"
- 
-        redirect {
-            port        = 443
-            protocol    = "HTTPS"
-            status_code = "HTTP_301"
-        }
-    }
-}
+#    default_action {
+#        type = "redirect"
+# 
+#        redirect {
+#            port        = 443
+#            protocol    = "HTTPS"
+#            status_code = "HTTP_301"
+#        }
+#   }
 
-
-resource "aws_alb_listener" "alb-https-listener" {
-    load_balancer_arn = aws_lb.lb.id
-    port              = 443
-    protocol          = "HTTPS"
- 
-    ssl_policy        = "ELBSecurityPolicy-2016-08"
-    certificate_arn   = var.tsl_certificate_arn
- 
     default_action {
         target_group_arn = aws_alb_target_group.alb-target-group.id
         type             = "forward"
     }
 }
+
+
+#resource "aws_alb_listener" "alb-https-listener" {
+#    load_balancer_arn = aws_lb.lb.id
+#    port              = 443
+#    protocol          = "HTTPS"
+# 
+#    ssl_policy        = "ELBSecurityPolicy-2016-08"
+#    certificate_arn   = var.tsl_certificate_arn
+# 
+#    default_action {
+#        target_group_arn = aws_alb_target_group.alb-target-group.id
+#        type             = "forward"
+#    }
+#}
 
 
 resource "aws_appautoscaling_target" "ecs_target" {
@@ -369,3 +374,14 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
         target_value = 60
     }
 }
+
+
+# Route53
+
+#resource "aws_route53_record" "app2048-route53" {
+#    zone_id = aws_route53_zone.primary.zone.id
+#    name = "app2048.com"
+#    type = "A"
+#    ttl = 300
+#    records = [aws_lb.lb.dns_name]
+#}
