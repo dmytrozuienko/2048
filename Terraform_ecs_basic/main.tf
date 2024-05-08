@@ -174,13 +174,13 @@ resource "aws_ecs_task_definition" "task-definition" {
     family = "service"
     network_mode             = "awsvpc"
     requires_compatibilities = ["FARGATE"]
-    cpu                      = 10
-    memory                   = 256
+    cpu         = 256
+    memory      = 512
     execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
     task_role_arn            = aws_iam_role.ecs_task_role.arn
     container_definitions = jsonencode([{
-            name        = "2048_httpd"
-            image       = "905418075806.dkr.ecr.us-east-1.amazonaws.com/2048_httpd:1"
+            name        = "app2048_httpd"
+            image       = "905418075806.dkr.ecr.us-east-1.amazonaws.com/app2048_httpd"
             essential   = true
             portMappings = [{
                 protocol      = "tcp"
@@ -240,7 +240,7 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
 
 
 resource "aws_ecs_service" "ecs-service" {
-    name                               = "${var.name}-service-${var.environment}"
+    name                               = "${var.name}_${var.environment}"
     cluster                            = aws_ecs_cluster.fargate-cluster.id
     task_definition                    = aws_ecs_task_definition.task-definition.arn
     desired_count                      = 2
@@ -257,7 +257,7 @@ resource "aws_ecs_service" "ecs-service" {
  
     load_balancer {
       target_group_arn = aws_alb_target_group.alb-target-group.arn
-      container_name   = "${var.name}-container-${var.environment}"
+      container_name   = "${var.name}_${var.environment}"
       container_port   = var.container_port
     }
  

@@ -51,7 +51,7 @@ variable "container_port" {
 
 variable "tsl_certificate_arn" {
   description = "ARN of certificate that ALB uses for https"
-  default     = "arn:aws:acm:us-east-1:905418075806:certificate/dc7da837-b9f3-4cd9-b540-4c4717dcb5d6"
+  default     = "arn:aws:acm:us-east-1:905418075806:certificate/657f958d-22e4-49cf-913f-3e6838505192"
 }
 
 variable "health_check_path" {
