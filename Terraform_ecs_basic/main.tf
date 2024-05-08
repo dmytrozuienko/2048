@@ -180,7 +180,7 @@ resource "aws_ecs_task_definition" "task-definition" {
     task_role_arn            = aws_iam_role.ecs_task_role.arn
     container_definitions = jsonencode([{
             name        = "2048_httpd"
-            image       = "905418075806.dkr.ecr.us-east-1.amazonaws.com/2048_httpd:2"
+            image       = "905418075806.dkr.ecr.us-east-1.amazonaws.com/2048_httpd:1"
             essential   = true
             portMappings = [{
                 protocol      = "tcp"
