@@ -243,7 +243,7 @@ resource "aws_ecs_service" "ecs-service" {
     name                               = "${var.name}_${var.environment}"
     cluster                            = aws_ecs_cluster.fargate-cluster.id
     task_definition                    = aws_ecs_task_definition.task-definition.arn
-    desired_count                      = 1
+    desired_count                      = 2
     deployment_minimum_healthy_percent = 50
     deployment_maximum_percent         = 200
     launch_type                        = "FARGATE"
@@ -272,7 +272,7 @@ resource "aws_lb" "lb" {
     internal           = false
     load_balancer_type = "application"
     security_groups    = [aws_security_group.alb-sg.id]
-    subnets            = aws_subnet.private-subnet.*.id
+    subnets            = aws_subnet.public-subnet.*.id
  
     enable_deletion_protection = false
 }
@@ -319,24 +319,24 @@ resource "aws_alb_listener" "alb-http-listener" {
 }
 
 
-#resource "aws_alb_listener" "alb-https-listener" {
-#    load_balancer_arn = aws_lb.lb.id
-#    port              = 443
-#    protocol          = "HTTPS"
-# 
-#    ssl_policy        = "ELBSecurityPolicy-2016-08"
-#    certificate_arn   = var.tsl_certificate_arn
-# 
-#    default_action {
-#        target_group_arn = aws_alb_target_group.alb-target-group.id
-#        type             = "forward"
-#    }
-#}
+resource "aws_alb_listener" "alb-https-listener" {
+   load_balancer_arn = aws_lb.lb.id
+   port              = 443
+   protocol          = "HTTPS"
+
+   ssl_policy        = "ELBSecurityPolicy-2016-08"
+   certificate_arn   = var.tsl_certificate_arn
+
+   default_action {
+       target_group_arn = aws_alb_target_group.alb-target-group.id
+       type             = "forward"
+   }
+}
 
 
 resource "aws_appautoscaling_target" "ecs_target" {
     max_capacity       = 4
-    min_capacity       = 1
+    min_capacity       = 2
     resource_id        = "service/${aws_ecs_cluster.fargate-cluster.name}/${aws_ecs_service.ecs-service.name}"
     scalable_dimension = "ecs:service:DesiredCount"
     service_namespace  = "ecs"
