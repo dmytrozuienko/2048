@@ -51,9 +51,15 @@ variable "container_port" {
 
 variable "tsl_certificate_arn" {
   description = "ARN of certificate that ALB uses for https"
-  default     = "arn:aws:acm:us-east-1:905418075806:certificate/657f958d-22e4-49cf-913f-3e6838505192"
+  default     = "arn:aws:acm:us-east-1:905418075806:certificate/0d1152a4-5d8b-45b4-99f2-31739cc74a28"
 }
 
 #variable "health_check_path" {
 #  description = "Path healthy check"
 #}
+
+
+variable "app2048_domain_name" {
+  type    = string
+  default = "app2048.com"
+}

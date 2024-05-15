@@ -302,35 +302,31 @@ resource "aws_alb_listener" "alb-http-listener" {
     port              = 80
     protocol          = "HTTP"
  
-#    default_action {
-#        type = "redirect"
-# 
-#        redirect {
-#            port        = 443
-#            protocol    = "HTTPS"
-#            status_code = "HTTP_301"
-#        }
-#   }
+   default_action {
+       type = "redirect"
+
+       redirect {
+           port        = 443
+           protocol    = "HTTPS"
+           status_code = "HTTP_301"
+       }
+  }
+}
+
+
+resource "aws_alb_listener" "alb-https-listener" {
+    load_balancer_arn = aws_lb.lb.id
+    port              = 443
+    protocol          = "HTTPS"
+
+    ssl_policy        = "ELBSecurityPolicy-2016-08"
+    # certificate_arn   = aws_acm_certificate.app2048-certificate.arn
+    certificate_arn = var.tsl_certificate_arn
 
     default_action {
         target_group_arn = aws_alb_target_group.alb-target-group.id
         type             = "forward"
     }
-}
-
-
-resource "aws_alb_listener" "alb-https-listener" {
-   load_balancer_arn = aws_lb.lb.id
-   port              = 443
-   protocol          = "HTTPS"
-
-   ssl_policy        = "ELBSecurityPolicy-2016-08"
-   certificate_arn   = var.tsl_certificate_arn
-
-   default_action {
-       target_group_arn = aws_alb_target_group.alb-target-group.id
-       type             = "forward"
-   }
 }
 
 
@@ -376,12 +372,32 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
 }
 
 
-# Route53
+# # Route53
+# resource "aws_route53_zone" "app2048-zone" {
+#   name = var.app2048_domain_name
+# }
 
-#resource "aws_route53_record" "app2048-route53" {
-#    zone_id = aws_route53_zone.primary.zone.id
-#    name = "app2048.com"
-#    type = "A"
-#    ttl = 300
-#    records = [aws_lb.lb.dns_name]
-#}
+
+# resource "aws_acm_certificate" "app2048-certificate" {
+#   domain_name       = var.app2048_domain_name
+#   validation_method = "DNS"
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
+
+
+# resource "aws_route53_record" "app2048-cert-dns" {
+#   allow_overwrite = true
+#   name =  tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_name
+#   records = [tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_value]
+#   type = tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_type
+#   zone_id = aws_route53_zone.app2048-zone.zone_id
+#   ttl = 60
+# }
+
+
+# resource "aws_acm_certificate_validation" "app2048-cert-validate" {
+#   certificate_arn = aws_acm_certificate.app2048-certificate.arn
+#   validation_record_fqdns = [aws_route53_record.app2048-cert-dns.fqdn]
+# }
