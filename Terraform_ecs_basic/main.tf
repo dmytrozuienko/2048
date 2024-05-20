@@ -320,8 +320,7 @@ resource "aws_alb_listener" "alb-https-listener" {
     protocol          = "HTTPS"
 
     ssl_policy        = "ELBSecurityPolicy-2016-08"
-    # certificate_arn   = aws_acm_certificate.app2048-certificate.arn
-    certificate_arn = var.tsl_certificate_arn
+    certificate_arn   = aws_acm_certificate.app2048-certificate.arn
 
     default_action {
         target_group_arn = aws_alb_target_group.alb-target-group.id
@@ -372,32 +371,53 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
 }
 
 
-# # Route53
-# resource "aws_route53_zone" "app2048-zone" {
-#   name = var.app2048_domain_name
-# }
+# Route53
+data "aws_route53_zone" "app2048-zone" {
+  name         = var.app2048_domain_name
+  private_zone = false
+}
 
 
-# resource "aws_acm_certificate" "app2048-certificate" {
-#   domain_name       = var.app2048_domain_name
-#   validation_method = "DNS"
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
+# ACM Certificate for SSL
+resource "aws_acm_certificate" "app2048-certificate" {
+  domain_name       = "app2048.com"
+  validation_method = "DNS"
+}
+ 
+# Route 53 DNS Validation
+resource "aws_route53_record" "app2048-route53-CNAME-record" {
+  for_each = {
+    for dvo in aws_acm_certificate.app2048-certificate.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+ 
+
+  zone_id = data.aws_route53_zone.app2048-zone.zone_id
+  name    = each.value.name
+  type    = each.value.type
+  ttl     = 60
+  records = [each.value.record]
+  allow_overwrite = true
+}
 
 
-# resource "aws_route53_record" "app2048-cert-dns" {
-#   allow_overwrite = true
-#   name =  tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_name
-#   records = [tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_value]
-#   type = tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_type
-#   zone_id = aws_route53_zone.app2048-zone.zone_id
-#   ttl = 60
-# }
+resource "aws_acm_certificate_validation" "app2048-certificate-validation" {
+  certificate_arn         = aws_acm_certificate.app2048-certificate.arn
+  validation_record_fqdns = [for record in aws_route53_record.app2048-route53-CNAME-record : record.fqdn]
+}
 
 
-# resource "aws_acm_certificate_validation" "app2048-cert-validate" {
-#   certificate_arn = aws_acm_certificate.app2048-certificate.arn
-#   validation_record_fqdns = [aws_route53_record.app2048-cert-dns.fqdn]
-# }
+# Route53 A Record to LB
+resource "aws_route53_record" "app2048-route53-A-record" {
+  zone_id = data.aws_route53_zone.app2048-zone.zone_id
+  name    = var.app2048_domain_name
+  type    = "A"
+  alias {
+    name                   = aws_lb.lb.dns_name
+    zone_id                = aws_lb.lb.zone_id
+    evaluate_target_health = true
+  }
+}
