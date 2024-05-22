@@ -372,9 +372,15 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
 
 
 # Route53
-data "aws_route53_zone" "app2048-zone" {
+# data "aws_route53_zone" "app2048-zone" {
+#   name         = var.app2048_domain_name
+#   private_zone = false
+# }
+
+
+resource "aws_route53_zone" "app2048-zone" {
   name         = var.app2048_domain_name
-  private_zone = false
+  
 }
 
 
@@ -386,21 +392,27 @@ resource "aws_acm_certificate" "app2048-certificate" {
  
 # Route 53 DNS Validation
 resource "aws_route53_record" "app2048-route53-CNAME-record" {
-  for_each = {
-    for dvo in aws_acm_certificate.app2048-certificate.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
+#   for_each = {
+#     for dvo in aws_acm_certificate.app2048-certificate.domain_validation_options : dvo.domain_name => {
+#       name   = dvo.resource_record_name
+#       record = dvo.resource_record_value
+#       type   = dvo.resource_record_type
+#     }
+#   }
  
 
-  zone_id = data.aws_route53_zone.app2048-zone.zone_id
-  name    = each.value.name
-  type    = each.value.type
-  ttl     = 60
-  records = [each.value.record]
-  allow_overwrite = true
+    zone_id = aws_route53_zone.app2048-zone.zone_id
+    # name    = each.value.name
+    # type    = each.value.type
+    # records = [each.value.record]
+
+    name      =  tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_name
+    records   = [tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_value]
+    type      = tolist(aws_acm_certificate.app2048-certificate.domain_validation_options)[0].resource_record_type
+
+    ttl     = 60
+    allow_overwrite = true
+
 }
 
 
@@ -412,7 +424,7 @@ resource "aws_acm_certificate_validation" "app2048-certificate-validation" {
 
 # Route53 A Record to LB
 resource "aws_route53_record" "app2048-route53-A-record" {
-  zone_id = data.aws_route53_zone.app2048-zone.zone_id
+  zone_id = aws_route53_zone.app2048-zone.zone_id
   name    = var.app2048_domain_name
   type    = "A"
   alias {
