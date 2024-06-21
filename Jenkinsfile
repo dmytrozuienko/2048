@@ -30,7 +30,6 @@ pipeline {
                             def myImage = docker.build('app2048_httpd')
                             myImage.push('latest')
                         }
-                    )
                 }
             }
         }
