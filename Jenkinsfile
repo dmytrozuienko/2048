@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_ECR_IMAGE_URL = '905418075806.dkr.ecr.us-east-1.amazonaws.com'
-        DOCKER_IMAGE = 'app2048_httpd'
+//        DOCKER_IMAGE = 'app2048_httpd'
     }
 
     stages {
