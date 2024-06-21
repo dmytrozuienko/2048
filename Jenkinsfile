@@ -9,6 +9,7 @@ pipeline {
         stage('Build') {
             steps {
                 cleanWs()
+                sh 'ls -alh'
                 sh 'docker build -t app2048_httpd .'
             }
         }
