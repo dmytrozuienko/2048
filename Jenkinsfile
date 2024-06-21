@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_ECR_IMAGE_URL = ''
+        AWS_ECR_IMAGE_URL = '905418075806.dkr.ecr.us-east-1.amazonaws.com'
     }
 
     stages {
