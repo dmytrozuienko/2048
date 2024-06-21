@@ -9,8 +9,8 @@ pipeline {
         stage('Build') {
             steps {
                 //cleanWs()
-                sh 'ls -alh'
                 sh 'docker build -t app2048_httpd .'
+                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418075806.dkr.ecr.us-east-1.amazonaws.com'
             }
         }
         stage('Test') {
