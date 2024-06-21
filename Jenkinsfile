@@ -7,6 +7,11 @@ pipeline {
     }
 
     stages {
+        stage('Test') {
+            steps {
+                echo 'SonarQube'
+            }
+        }
         stage('Build') {
             steps {
                 //cleanWs()
@@ -16,20 +21,23 @@ pipeline {
                 //}
             }
         }
-        stage('Test') {
-            steps {
-                echo 'SonarQube'
-            }
-        }
-        stage('Deploy') {
+        stage('Push') {
             steps {
                 script {
                     docker.withRegistry(
                         'https://905418075806.dkr.ecr.us-east-1.amazonaws.com',
                         'ecr:us-east-1:aws-creds') {
                             def myImage = docker.build('app2048_httpd')
-                            myImage.push('v0.2')
+                            myImage.push('v0.3')
                         }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'AWS ECS Service Update'
+                withAWS(credentials: 'aws-creds', region:'us-east-1') {
+                    sh "awsecs update-service --cluster app2048_httpd --service app2048_httpd --force-new-deployment"
                 }
             }
         }
