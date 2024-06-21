@@ -28,7 +28,7 @@ pipeline {
                         'https://905418075806.dkr.ecr.us-east-1.amazonaws.com',
                         'ecr:us-east-1:aws-creds') {
                             def myImage = docker.build('app2048_httpd')
-                            myImage.push('v0.4')
+                            myImage.push('v0.5')
                         }
                 }
             }
