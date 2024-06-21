@@ -37,7 +37,7 @@ pipeline {
             steps {
                 echo 'AWS ECS Service Update'
                 withAWS(credentials: 'aws-creds', region:'us-east-1') {
-                    sh "aws ecs update-service --cluster app2048_httpd --service app2048_httpd --force-new-deployment"
+                    sh "aws ecs update-service --cluster app2048-cluster-httpd --service app2048_httpd --force-new-deployment"
                 }
             }
         }
